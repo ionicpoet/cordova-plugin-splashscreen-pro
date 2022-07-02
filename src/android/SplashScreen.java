@@ -63,6 +63,7 @@ public class SplashScreen extends CordovaPlugin {
     private static ProgressDialog spinnerDialog;
     private static boolean firstShow = true;
     private static boolean lastHideAfterDelay; // https://issues.apache.org/jira/browse/CB-9094
+    public static String SPINER_COLOR;
 
     /**
      * Displays the splash drawable.
@@ -330,6 +331,7 @@ public class SplashScreen extends CordovaPlugin {
 int currentNightMode = context.getResources().getConfiguration().uiMode &  Configuration.UI_MODE_NIGHT_MASK;
 switch (currentNightMode) {
     case Configuration.UI_MODE_NIGHT_NO:
+      SPINER_COLOR = preferences.getString("SplashScreenSpinnerColor", "#000000");
       String backgroundColor = preferences.getString("SplashBackgroundColor", "#ffffff");
       splashImageView.setBackgroundColor(preferences.getInteger("backgroundColor", Color.parseColor(backgroundColor)));
       String statusBarColor = preferences.getString("SplashStatusBarColor", "#ffffff");
@@ -360,6 +362,7 @@ switch (currentNightMode) {
       }
         break;
     case Configuration.UI_MODE_NIGHT_YES:
+      SPINER_COLOR = preferences.getString("SplashScreenSpinnerColorDark", "#FFFFFF");
       String backgroundColorDark = preferences.getString("SplashBackgroundColorDark", "#000000");
       splashImageView.setBackgroundColor(preferences.getInteger("backgroundColor", Color.parseColor(backgroundColorDark)));
       String statusBarColorDark = preferences.getString("SplashStatusBarColorDark", "#000000");
@@ -462,19 +465,16 @@ switch (currentNightMode) {
 
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 
-                    
-int currentNightMode2 = Configuration.UI_MODE_NIGHT_MASK;  
-switch (currentNightMode2) {
-    case Configuration.UI_MODE_NIGHT_YES:
-        String colorName = preferences.getString("SplashScreenSpinnerColor", "#000000");
-                    if(colorName != null){
+    
+             
+                    if(SPINER_COLOR != null){
                         int[][] states = new int[][] {
                             new int[] { android.R.attr.state_enabled}, // enabled
                             new int[] {-android.R.attr.state_enabled}, // disabled
                             new int[] {-android.R.attr.state_checked}, // unchecked
                             new int[] { android.R.attr.state_pressed}  // pressed
                         };
-                        int progressBarColor = Color.parseColor(colorName);
+                        int progressBarColor = Color.parseColor(SPINER_COLOR);
                         int[] colors = new int[] {
                             progressBarColor,
                             progressBarColor,
@@ -484,29 +484,7 @@ switch (currentNightMode2) {
                         ColorStateList colorStateList = new ColorStateList(states, colors);
                         progressBar.setIndeterminateTintList(colorStateList);
                     }
-        break;
-    case Configuration.UI_MODE_NIGHT_NO:
-        String colorNameDark = preferences.getString("SplashScreenSpinnerColorDark", "#FFFFFF");
-                    if(colorNameDark != null){
-                        int[][] states = new int[][] {
-                            new int[] { android.R.attr.state_enabled}, // enabled
-                            new int[] {-android.R.attr.state_enabled}, // disabled
-                            new int[] {-android.R.attr.state_checked}, // unchecked
-                            new int[] { android.R.attr.state_pressed}  // pressed
-                        };
-                        int progressBarColor = Color.parseColor(colorNameDark);
-                        int[] colors = new int[] {
-                            progressBarColor,
-                            progressBarColor,
-                            progressBarColor,
-                            progressBarColor
-                        };
-                        ColorStateList colorStateList = new ColorStateList(states, colors);
-                        progressBar.setIndeterminateTintList(colorStateList);
-                    }
-        break;
-}    
-                    
+                      
 
                 }
 
