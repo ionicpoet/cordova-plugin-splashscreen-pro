@@ -43,6 +43,8 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.content.res.ColorStateList;
 
+import android.content.res.Configuration;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
@@ -299,7 +301,7 @@ public class SplashScreen extends CordovaPlugin {
                 splashImageView.setMinimumWidth(display.getWidth());
 
                 // TODO: Use the background color of the webView's parent instead of using the preference.
-                splashImageView.setBackgroundColor(preferences.getInteger("backgroundColor", Color.BLACK));
+                
 
                 if (isMaintainAspectRatio()) {
                     // CENTER_CROP scale mode is equivalent to CSS "background-size:cover"
@@ -324,6 +326,12 @@ public class SplashScreen extends CordovaPlugin {
 
 
 
+
+int currentNightMode = context.getResources().getConfiguration().uiMode &  Configuration.UI_MODE_NIGHT_MASK;
+switch (currentNightMode) {
+    case Configuration.UI_MODE_NIGHT_NO:
+      String backgroundColor = preferences.getString("SplashBackgroundColor", "#ffffff");
+      splashImageView.setBackgroundColor(preferences.getInteger("backgroundColor", Color.parseColor(backgroundColor)));
       String statusBarColor = preferences.getString("SplashStatusBarColor", "#ffffff");
       if (statusBarColor != null && !statusBarColor.isEmpty() && Build.VERSION.SDK_INT >= 19) {
 
@@ -337,7 +345,6 @@ public class SplashScreen extends CordovaPlugin {
                         LOG.w("SplashScreen StatusBarColor", "Method window.setStatusBarColor not found for SDK level " + Build.VERSION.SDK_INT);
                     }
       }
-      
       String navigationBarColor = preferences.getString("SplashNavigationBarColor", "#ffffff");
       if (navigationBarColor != null && !navigationBarColor.isEmpty() && Build.VERSION.SDK_INT >= 19) {
 
@@ -351,6 +358,51 @@ public class SplashScreen extends CordovaPlugin {
                         LOG.w("SplashScreen StatusBarColor", "Method window.setNavigationBarColor not found for SDK level " + Build.VERSION.SDK_INT);
                     }
       }
+        break;
+    case Configuration.UI_MODE_NIGHT_YES:
+      String backgroundColorDark = preferences.getString("SplashBackgroundColorDark", "#000000");
+      splashImageView.setBackgroundColor(preferences.getInteger("backgroundColor", Color.parseColor(backgroundColorDark)));
+      String statusBarColorDark = preferences.getString("SplashStatusBarColorDark", "#000000");
+      if (statusBarColorDark != null && !statusBarColorDark.isEmpty() && Build.VERSION.SDK_INT >= 19) {
+
+                    splashWindow.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    splashWindow.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                    try {
+                        // Using reflection makes sure any 5.0+ device will work without having to compile with SDK level 21
+                        splashWindow.getClass().getDeclaredMethod("setStatusBarColor", int.class).invoke(splashWindow, Color.parseColor(statusBarColorDark));
+                    } catch (Exception ignore) {
+                        // this should not happen, only in case Android removes this method in a version > 21
+                        LOG.w("SplashScreen StatusBarColor", "Method window.setStatusBarColor not found for SDK level " + Build.VERSION.SDK_INT);
+                    }
+      }
+      
+      String navigationBarColorDark = preferences.getString("SplashNavigationBarColorDark", "#000000");
+      if (navigationBarColorDark != null && !navigationBarColorDark.isEmpty() && Build.VERSION.SDK_INT >= 19) {
+
+                    splashWindow.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+                    splashWindow.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                    try {
+                        // Using reflection makes sure any 5.0+ device will work without having to compile with SDK level 21
+                        splashWindow.getClass().getDeclaredMethod("setNavigationBarColor", int.class).invoke(splashWindow, Color.parseColor(navigationBarColorDark));
+                    } catch (Exception ignore) {
+                        // this should not happen, only in case Android removes this method in a version > 21
+                        LOG.w("SplashScreen StatusBarColor", "Method window.setNavigationBarColor not found for SDK level " + Build.VERSION.SDK_INT);
+                    }
+      }
+        break;
+}    
+          
+          
+
+      
+
+      
+      
+
+
+
+
+
 
 
 
@@ -409,7 +461,12 @@ public class SplashScreen extends CordovaPlugin {
                 progressBar.setLayoutParams(layoutParams);
 
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    String colorName = preferences.getString("SplashScreenSpinnerColor", null);
+
+                    
+int currentNightMode2 = Configuration.UI_MODE_NIGHT_MASK;  
+switch (currentNightMode2) {
+    case Configuration.UI_MODE_NIGHT_YES:
+        String colorName = preferences.getString("SplashScreenSpinnerColor", "#000000");
                     if(colorName != null){
                         int[][] states = new int[][] {
                             new int[] { android.R.attr.state_enabled}, // enabled
@@ -427,6 +484,30 @@ public class SplashScreen extends CordovaPlugin {
                         ColorStateList colorStateList = new ColorStateList(states, colors);
                         progressBar.setIndeterminateTintList(colorStateList);
                     }
+        break;
+    case Configuration.UI_MODE_NIGHT_NO:
+        String colorNameDark = preferences.getString("SplashScreenSpinnerColorDark", "#FFFFFF");
+                    if(colorNameDark != null){
+                        int[][] states = new int[][] {
+                            new int[] { android.R.attr.state_enabled}, // enabled
+                            new int[] {-android.R.attr.state_enabled}, // disabled
+                            new int[] {-android.R.attr.state_checked}, // unchecked
+                            new int[] { android.R.attr.state_pressed}  // pressed
+                        };
+                        int progressBarColor = Color.parseColor(colorNameDark);
+                        int[] colors = new int[] {
+                            progressBarColor,
+                            progressBarColor,
+                            progressBarColor,
+                            progressBarColor
+                        };
+                        ColorStateList colorStateList = new ColorStateList(states, colors);
+                        progressBar.setIndeterminateTintList(colorStateList);
+                    }
+        break;
+}    
+                    
+
                 }
 
                 centeredLayout.addView(progressBar);
